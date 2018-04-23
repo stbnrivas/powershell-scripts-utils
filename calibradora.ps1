@@ -175,6 +175,7 @@ $inputXML = @"
             </ComboBox>
             <TextBlock Name="textOutput" Text="Carpeta Destino"  Margin="1 1 1 1"></TextBlock>
             <ComboBox Name="comboOutput"  Margin="1 1 1 1" SelectedIndex="0">
+                <ComboBoxItem>C:\UNITEC\</ComboBoxItem> 
                 <ComboBoxItem>N:\CALIBRADORA\UNITEC\ORIGEN\</ComboBoxItem>            
                 <ComboBoxItem>C:\SCE\PartiteCali1\outputs\</ComboBoxItem>
                 <ComboBoxItem>C:\Documents and Settings\Administrador\Escritorio\clasificaciones 2018\</ComboBoxItem>
