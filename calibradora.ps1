@@ -108,7 +108,7 @@ function Convert-MDB( $mdbPath, $mdbName, $txtPath, $txtName) {
 
         "" | Add-Content "$txtPath$txtName"
 
-        "N Clase Numero Peso Porcent." | Add-Content "$txtPath$txtName"
+        "N Clase Numero Peso(kg) Porcent." | Add-Content "$txtPath$txtName"
         "" | Add-Content "$txtPath$txtName"
         $recordset.Open("select Indice, Nome, NumFrutti, PesoFrutti from ContClasse",$connection,$adOpenStatic,$adLockOptmistic)
         $recordset.MoveFirst()
@@ -124,7 +124,7 @@ function Convert-MDB( $mdbPath, $mdbName, $txtPath, $txtName) {
             $i5 = ($i4*100.0)/$fullWeight 
             $i5 = [math]::Round($i5,1)
 
-            "$i1 $i2 $i3 $i4 Kg $i5 " | Add-Content "$txtPath$txtName"
+            "$i1;$i2;$i3;$i4;$i5;" | Add-Content "$txtPath$txtName"
             $recordset.MoveNext()
         } until ($recordset.EOF -eq $true)
         $recordset.Close()
