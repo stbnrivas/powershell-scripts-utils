@@ -26,34 +26,43 @@ $pathAndrea = ("Downloads"),
                 ("Desktop"),
                 ("Favorites"),
                 ("Documents"),
-                ("Links")
+                ("Links"),
+                ("C:\Correo"),     
+                ("Dropbox (Asinex)"),
+                ("C:\Users\andrea2\AppData\Local\Microsoft\Outlook\Outlook.pst"),
+                ("C:\Copia ordenador viejo"),
+                ("C:\Aplicaciones BS Online")
 
 $pathEsperanza = ("Downloads"),
                 ("Desktop"),
                 ("Favorites"),
                 ("Documents"),
-                ("Links")
+                ("Links"),
+                ("C:\Correo")
 
 
 $pathMonique = ("Downloads"),
                 ("Desktop"),
                 ("Favorites"),
                 ("Documents"),
-                ("Links")
+                ("Links"),
+                ("C:\Correo")
 
 
 $pathPilar = ("Downloads"),
                 ("Desktop"),
                 ("Favorites"),
                 ("Documents"),
-                ("Links")
+                ("Links"),
+                ("C:\Correo")
 
 
 $pathSamuel = ("Downloads"),
                 ("Desktop"),
                 ("Favorites"),
                 ("Documents"),
-                ("Links")
+                ("Links"),
+                ("C:\Correo")
 
 $pathFran = ("Downloads"),
             ("Desktop"),
@@ -64,12 +73,12 @@ $pathFran = ("Downloads"),
             ("C:\Correo"),
             ("C:\ProgramData\ArticSoluciones"),
             ("C:\Users\fran\AppData\Roaming\xArticSoluciones")            
-            
 
 
 
 $textOfFoldersIntoBackups = ""
 $arrayPaths = ""
+#$user = "andrea2"
 
 If ($user -eq "andrea2"){
     $arrayPaths = $pathAndrea
@@ -118,7 +127,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:calibradoraWPF"
         mc:Ignorable="d"
-        Title="Backup Tool Automation username: $user" SizeToContent="WidthAndHeight" MinWidth="400">    
+        Title="Backup Tool Automation username: $user" SizeToContent="WidthAndHeight" MinWidth="430">    
         <Grid>
             <Grid.ColumnDefinitions>                        
                     <ColumnDefinition Width="1*" />
