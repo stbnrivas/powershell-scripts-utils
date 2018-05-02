@@ -14,30 +14,100 @@
 $user = $env:UserName
 
 
-$folders_of_default = @"
-&#x0a;
- C:\Users\$user\Downloads&#x0a;
- C:\Users\$user\Desktop&#x0a;
- C:\Users\$user\Favorites&#x0a;
- C:\Users\$user\Documents&#x0a;
- C:\Users\$user\Links&#x0a;
-"@
-$path_of_default = ("C:\Users\$user\Downloads"),
-                ("C:\Users\$user\Desktop"),
-                ("C:\Users\$user\Favorites"),
-                ("C:\Users\$user\Documents"),
-                ("C:\Users\$user\Links")
+$text = ""
+$pathDefault = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links"),
+                ("C:\SCE")
 
-$folders = ""
-if ( $user -eq "stbn" ){ 
-$textOfFolders = $folders_of_default
-$paths = $path_of_default
+$pathAndrea = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links")
 
+$pathEsperanza = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links")
+
+
+$pathMonique = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links")
+
+
+$pathPilar = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links")
+
+
+$pathSamuel = ("Downloads"),
+                ("Desktop"),
+                ("Favorites"),
+                ("Documents"),
+                ("Links")
+
+$pathFran = ("Downloads"),
+            ("Desktop"),
+            ("Favorites"),
+            ("Documents"),
+            ("Links"),
+            ("C:\AEAT"),
+            ("C:\Correo"),
+            ("C:\ProgramData\ArticSoluciones"),
+            ("C:\Users\fran\AppData\Roaming\xArticSoluciones")            
+            
+
+
+
+$textOfFoldersIntoBackups = ""
+$arrayPaths = ""
+
+If ($user -eq "andrea2"){
+    $arrayPaths = $pathAndrea
+}  ElseIf ($user -eq "esperanza"){
+    $arrayPaths = $pathEsperanza
+}  ElseIf ($user -eq "monique"){    
+    $arrayPaths = $pathMoniqu
+}  ElseIf ($user -eq "pilar"){    
+    $arrayPaths = $pathPilar
+}  ElseIf ($user -eq "samuel"){    
+    $arrayPaths = $pathSamuel
+}  ElseIf ($user -eq "fran"){    
+    $arrayPaths = $pathFran
+}  ElseIf ($user -eq "stbn"){    
+    $arrayPaths = $pathDefault
+} Else {
+    [System.Windows.MessageBox]::Show('Backup can not find user. Please add to script new user configuration')
+    exit
+}
+
+
+foreach ($path in $arrayPaths){
+    #$textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; $path "
+    if (split-path $path -IsAbsolute){
+        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; $path "                     
+        #Write-Host "$path is absolute"
+    } else {                    
+        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; C:\Users\$user\$path " 
+        #Write-Host "C:\Users\$user\$path"
+    }   
 }
 
 
 
-function mainBackupGui {
+
+
+
+function main {
     Param()
 
 $inputXML = @"
@@ -48,7 +118,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:calibradoraWPF"
         mc:Ignorable="d"
-        Title="Backup Tool Automation" Width="500" Height="300">    
+        Title="Backup Tool Automation username: $user" SizeToContent="WidthAndHeight" MinWidth="400">    
         <Grid>
             <Grid.ColumnDefinitions>                        
                     <ColumnDefinition Width="1*" />
@@ -56,12 +126,13 @@ $inputXML = @"
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="50" />
                     <RowDefinition Height="50" />
             </Grid.RowDefinitions>
             <StackPanel Margin="5 5 5 5">
                 <TextBlock FontWeight="Bold" TextAlignment="Left" Text="ORIGIN:"></TextBlock>
-                <TextBlock TextAlignment="Left" Text="$textoffolders"></TextBlock>
+                <TextBlock TextAlignment="Left" Text="$textOfFoldersIntoBackups"></TextBlock>
             </StackPanel>
             <StackPanel Grid.Column="1">
                 <TextBlock FontWeight="Bold" TextAlignment="Left" Text="DESTINATION:"></TextBlock>
@@ -74,7 +145,8 @@ $inputXML = @"
                 <Label FontWeight="Bold">Shutdown after backup</Label>
                 <CheckBox Name="cbShutdown" IsChecked="True">Yes</CheckBox>                
             </StackPanel>
-            <Button Grid.Row="2" Grid.ColumnSpan="2" Name="btBackup" Content="Start Backup" Margin="3 5 3 3"></Button>
+            <Button Grid.Row="2" Grid.ColumnSpan="2" Name="btOpenLogsFolder" Content="Open Logs Folder" Margin="3 5 3 3"></Button>
+            <Button Grid.Row="3" Grid.ColumnSpan="2" Name="btBackup" Content="Start Backup" Margin="3 5 3 3"></Button>
         </Grid>
 
 </Window>
@@ -97,14 +169,17 @@ $inputXML = @"
         # Write-Host "WPF$($_.Name)"
     } 
 
+
+    $WPFbtOpenLogsFolder.Add_Click{
+        ii "C:\BACKUPS-LOGS\"
+    }
          
         
     $WPFbtBackup.Add_Click{        
-        $root_origin = "C:\Users\$user"
-        $root_destination = $WPFcomboOutput.Text
+        $prefix_path_user = "C:\Users\$user"
+        $prefix_destination = $WPFcomboOutput.Text
 
-        Write-Host $root_origin
-        Write-Host $root_destination
+        Write-Host "Backup: " $prefix_path_user "->" $prefix_destination        
 
         # PARAMS FOR ROBOCOPY:
         # /MIR               mirror mode equivalent /E /PURGE
@@ -115,30 +190,21 @@ $inputXML = @"
         # /LOG+:<LogFile>    log append contain
         # /XJD               excludes"junction points" for directories, symbolic links
 
-        If ( (Test-Path $root_origin) -and (Test-Path $root_destination) ){
+        # robocopy "C:\Users\fran\$path" "D:\BACKUPS\$user\$path" /MIR /R:5 /W:5 /Z /LOG+:C:\BACKUPS\LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log
 
-            If ( $user -eq "user1") {
-                        
-                # robocopy "$user\Downloads" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\Downloads" /E /MIR
-                #robocopy "$user\Desktop" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\Desktop" /E /MIR
-                #robocopy "$user\fran\Favorites" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\Favorites" /E /MIR
-                #robocopy "$user\fran\Documents" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\Documents" /E /MIR
-                #robocopy "$user\Links" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\Links" /E /MIR
+        If ( (Test-Path $prefix_path_user) -and (Test-Path $prefix_destination) ){
 
-                # PROBLEMS WITH CIRCULAR LINKS fixed at window 10
-                #robocopy "$user\AppData" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\AppData" /E /MIR /XD /zb
-                #robocopy "$user\AppData" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\AppData" /MIR /XD
-
-                #robocopy "C:\ProgramData\ArticSoluciones" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\ProgramData\ArticSoluciones" /E /MIR
-                #robocopy "$user\AppData\Roaming\xArticSoluciones" "D:\Backups\$((Get-Date).ToString("yyyy-MM-dd"))\AppData\Roaming\xArticSoluciones" /E  /MIR /XJ
-            }
-
-            If ($user -eq "user2"){
-            
-            
-            }
-            
-            
+            foreach ($path in $arrayPaths) {	            
+                if (split-path $path -IsAbsolute){
+                    $pathWithoutUnit = $path.Remove(0,3)                    
+                    write-host "robocopy '$path' '$prefix_destination\$pathWithoutUnit' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
+                    robocopy "$path" "$prefix_destination\$pathWithoutUnit" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"
+                    
+                } else {                    
+                    write-host "robocopy 'C:\Users\$user\$path' '$prefix_destination\$path' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS\LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
+                    robocopy "C:\Users\$user\$path" "$prefix_destination\$path" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"
+                }
+            }    
 
         } else {
             [System.Windows.MessageBox]::Show('Please, check origin and destination folders existence.')
@@ -159,5 +225,5 @@ $inputXML = @"
 
 
 #Call function to open the form
-mainBackupGui
+main
 #
