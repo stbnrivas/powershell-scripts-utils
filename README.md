@@ -1,6 +1,14 @@
 # powershell-scripts-utils
 some scripts with salt pepper and other spices.
 
+## requeriments
+
+some scripts requires Windows Management Framework 5.1, specifically that use a GUI needs when is used in windows 7
+
+https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7-KB3191566-x86.zip
+https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip
+
+
 
 ## how to create an clickable icon that open the scripts:
 
