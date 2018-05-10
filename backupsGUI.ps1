@@ -180,6 +180,9 @@ $inputXML = @"
 
 
     $WPFbtOpenLogsFolder.Add_Click{
+        If (!(Test-Path C:\BACKUPS-LOGS) ){
+            New-Item -ItemType Directory -Force -Path C:\BACKUPS-LOGS
+        }
         ii "C:\BACKUPS-LOGS\"
     }
          
