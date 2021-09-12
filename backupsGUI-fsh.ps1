@@ -17,16 +17,19 @@ $usbDisks = gwmi win32_diskdrive | ?{$_.interfacetype -eq "USB"} | %{gwmi -Query
 
 
 $text = ""
-$pathDefault = ("D:\Gw"),
-                ("D:\Gw_CB"),
-                ("D:\A3SOFTWARE"),
-                ("C:\Users\usuario\Google Drive")
+# $pathDefault = ("D:\Gw"),
+#                 ("D:\Gw_CB"),
+#                 ("D:\A3SOFTWARE"),
+#                 ("C:\Users\usuario\Google Drive")
+
+$pathDefault = ("C:\Gw"),
+                ("C:\A3")
 
 $textOfFoldersIntoBackups = ""
 $arrayPaths = ""
 
 # FIXME
-#$computerName = "SERVIDOR2" # TO TEST
+$computerName = "SERVIDOR2" # TO TEST
 # FIXME
 
 If ($computerName -eq "SERVIDOR2"){
@@ -40,10 +43,10 @@ If ($computerName -eq "SERVIDOR2"){
 foreach ($path in $arrayPaths){
     #$textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; $path "
     if (split-path $path -IsAbsolute){
-        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; $path "                     
+        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; $path "
         #Write-Host "$path is absolute"
-    } else {                    
-        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; C:\Users\$user\$path " 
+    } else {
+        $textOfFoldersIntoBackups = "$textOfFoldersIntoBackups &#x0a; C:\Users\$user\$path "
         #Write-Host "C:\Users\$user\$path"
     }
 }
@@ -62,7 +65,7 @@ $inputXML1 = @"
         mc:Ignorable="d"
         Title="Backup Tool Automation made for FSEH" SizeToContent="WidthAndHeight" MinWidth="430">
         <Grid>
-            <Grid.ColumnDefinitions>                        
+            <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
@@ -83,11 +86,12 @@ $inputXML1 = @"
 
 #                    <ComboBoxItem>$usbDisks\Backups</ComboBoxItem>
 $destinationsOptions = ""
-$Devices = @(Get-WmiObject -Query "Select * From Win32_LogicalDisk" | ? { $_.driveType -eq 2 })
+# $Devices = @(Get-WmiObject -Query "Select * From Win32_LogicalDisk" | ? { $_.driveType -eq 2 })
+$Devices = gwmi win32_diskdrive | ?{$_.interfacetype -eq "USB"} | %{gwmi -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID=`"$($_.DeviceID.replace('\','\\'))`"} WHERE AssocClass = Win32_DiskDriveToDiskPartition"} |  %{gwmi -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID=`"$($_.DeviceID)`"} WHERE AssocClass = Win32_LogicalDiskToPartition"} | %{$_.deviceid}
+
 ForEach ($Device in $Devices){
-    $current = gwmi win32_volume | Where-Object {$_.DriveLetter -eq ($Device.DeviceID)} | Select-Object DriveLetter   
-    $letter = $current.DriveLetter 
-    $destinationsOptions = $destinationsOptions + "<ComboBoxItem>$letter</ComboBoxItem>"
+    $letter = $Device
+    $destinationsOptions = $destinationsOptions + "<ComboBoxItem>$letter\</ComboBoxItem>"
 }
 
 $inputXML2 = @"
@@ -95,7 +99,7 @@ $inputXML2 = @"
             </StackPanel>
             <StackPanel Grid.Row="1" Margin="5 5 5 5">
                 <Label FontWeight="Bold">Shutdown after backup</Label>
-                <CheckBox Name="cbShutdown" IsChecked="True">Yes</CheckBox>                
+                <CheckBox Name="cbShutdown" IsChecked="False">Yes</CheckBox>                
             </StackPanel>
             <Button Grid.Row="2" Grid.ColumnSpan="2" Name="btOpenLogsFolder" Content="Open Logs Folder" Margin="3 5 3 3"></Button>
             <Button Grid.Row="3" Grid.ColumnSpan="2" Name="btBackup" Content="Start Backup" Margin="3 5 3 3"></Button>
@@ -108,8 +112,8 @@ $inputXML2 = @"
 
     [xml]$XAML = $inputXML -replace 'mc:Ignorable="d"','' -replace "x:N",'N'  -replace '^<Win.*', '<Window' 
     
-    #Read XAML 
-    $reader=(New-Object System.Xml.XmlNodeReader $xaml) 
+    #Read XAML
+    $reader=(New-Object System.Xml.XmlNodeReader $xaml)
     try {
         $Form=[Windows.Markup.XamlReader]::Load( $reader )
     } catch {    
@@ -131,7 +135,7 @@ $inputXML2 = @"
     }
          
         
-    $WPFbtBackup.Add_Click{        
+    $WPFbtBackup.Add_Click{
         $prefix_path_user = "C:\Users\$user"
         $prefix_destination = $WPFcomboOutput.Text
 
@@ -149,16 +153,16 @@ $inputXML2 = @"
         # robocopy "C:\Users\fran\$path" "D:\BACKUPS\$user\$path" /MIR /R:5 /W:5 /Z /LOG+:C:\BACKUPS\LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log
 
         If ( (Test-Path $prefix_path_user) -and (Test-Path $prefix_destination) ){
-            
-            foreach ($path in $arrayPaths) {                
+
+            foreach ($path in $arrayPaths) {
                 if (split-path $path -IsAbsolute){
                     $pathWithoutUnit = $path.Remove(0,3)                    
-                    write-host "robocopy '$path' '$prefix_destination\$((Get-Date).ToString("yyyy-MM-dd"))\$pathWithoutUnit' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
-                    robocopy "$path" "$prefix_destination\$((Get-Date).ToString("yyyy-MM-dd"))\$pathWithoutUnit" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"                    
+                    write-host "robocopy '$path' '$prefix_destination$((Get-Date).ToString("yyyy-MM-dd"))\$pathWithoutUnit' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
+                    robocopy "$path" "$prefix_destination$((Get-Date).ToString("yyyy-MM-dd"))\$pathWithoutUnit" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"
                     
                 } else {                    
-                    write-host "robocopy 'C:\Users\$user\$path' '$prefix_destination\$((Get-Date).ToString("yyyy-MM-dd"))\\$path' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS\LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
-                    robocopy "C:\Users\$user\$path" "$prefix_destination\$((Get-Date).ToString("yyyy-MM-dd"))\\$path" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"
+                    write-host "robocopy 'C:\Users\$user\$path' '$prefix_destination$((Get-Date).ToString("yyyy-MM-dd"))\\$path' /MIR /R:5 /W:5 /Z /LOG+:'C:\BACKUPS\LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log'"
+                    robocopy "C:\Users\$user\$path" "$prefix_destination$((Get-Date).ToString("yyyy-MM-dd"))\\$path" /MIR /R:5 /W:5 /Z /LOG+:"C:\BACKUPS-LOGS\$((Get-Date).ToString("yyyy-MM-dd")).log"
                 }
             }    
 
